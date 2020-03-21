@@ -61,66 +61,67 @@ auto ShaderBuilder::load(std::string_view filename, Shader::Type type)
   return ShaderProgram{shaders_};
 }
 
-auto Shader::set_bool(const std::string& name, bool value) const noexcept
+auto ShaderProgram::set_bool(const std::string& name, bool value) const noexcept
     -> void
 {
   glUniform1i(glGetUniformLocation(id_, name.c_str()), static_cast<int>(value));
 }
 
-auto Shader::set_int(const std::string& name, int value) const noexcept -> void
+auto ShaderProgram::set_int(const std::string& name, int value) const noexcept
+    -> void
 {
   glUniform1i(glGetUniformLocation(id_, name.c_str()), value);
 }
 
-auto Shader::set_float(const std::string& name, float value) const noexcept
-    -> void
+auto ShaderProgram::set_float(const std::string& name, float value) const
+    noexcept -> void
 {
   glUniform1f(glGetUniformLocation(id_, name.c_str()), value);
 }
-auto Shader::set_vec2(const std::string& name, const beyond::Vec2& value) const
-    noexcept -> void
+auto ShaderProgram::set_vec2(const std::string& name,
+                             const beyond::Vec2& value) const noexcept -> void
 {
   glUniform2fv(glGetUniformLocation(id_, name.c_str()), 1, value.elem.data());
 }
-auto Shader::set_vec2(const std::string& name, float x, float y) const noexcept
-    -> void
+auto ShaderProgram::set_vec2(const std::string& name, float x, float y) const
+    noexcept -> void
 {
   glUniform2f(glGetUniformLocation(id_, name.c_str()), x, y);
 }
-auto Shader::set_vec3(const std::string& name, const beyond::Vec3& value) const
-    noexcept -> void
+auto ShaderProgram::set_vec3(const std::string& name,
+                             const beyond::Vec3& value) const noexcept -> void
 {
   glUniform3fv(glGetUniformLocation(id_, name.c_str()), 1, value.elem.data());
 }
-auto Shader::set_vec3(const std::string& name, float x, float y, float z) const
-    noexcept -> void
+auto ShaderProgram::set_vec3(const std::string& name, float x, float y,
+                             float z) const noexcept -> void
 {
   glUniform3f(glGetUniformLocation(id_, name.c_str()), x, y, z);
 }
-auto Shader::set_vec4(const std::string& name, const beyond::Vec4& value) const
-    noexcept -> void
+auto ShaderProgram::set_vec4(const std::string& name,
+                             const beyond::Vec4& value) const noexcept -> void
 {
   glUniform4fv(glGetUniformLocation(id_, name.c_str()), 1, value.elem.data());
 }
-auto Shader::set_vec4(const std::string& name, float x, float y, float z,
-                      float w) const noexcept -> void
+auto ShaderProgram::set_vec4(const std::string& name, float x, float y, float z,
+                             float w) const noexcept -> void
 {
   glUniform4f(glGetUniformLocation(id_, name.c_str()), x, y, z, w);
 }
-auto Shader::set_mat2(const std::string& name, const beyond::Mat2& mat) const
-    noexcept -> void
+auto ShaderProgram::set_mat2(const std::string& name,
+                             const beyond::Mat2& mat) const noexcept -> void
 {
   glUniformMatrix2fv(glGetUniformLocation(id_, name.c_str()), 1, GL_FALSE,
                      mat.data);
 }
-auto Shader::set_mat3(const std::string& name, const beyond::Mat3& mat) const
-    noexcept -> void
+auto ShaderProgram::set_mat3(const std::string& name,
+                             const beyond::Mat3& mat) const noexcept -> void
 {
   glUniformMatrix3fv(glGetUniformLocation(id_, name.c_str()), 1, GL_FALSE,
                      mat.data);
 }
-auto Shader::set_mat4(const std::string& name, const beyond::Mat4& mat) const
-    noexcept -> void
+auto ShaderProgram::set_mat4(const std::string& name,
+                             const beyond::Mat4& mat) const noexcept -> void
 {
   glUniformMatrix4fv(glGetUniformLocation(id_, name.c_str()), 1, GL_FALSE,
                      mat.data);

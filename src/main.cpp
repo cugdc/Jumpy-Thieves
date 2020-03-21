@@ -9,7 +9,7 @@ int main()
 
   while (!app.should_close()) {
     now = std::chrono::high_resolution_clock::now();
-    app.update(now - previous);
+    app.mainloop(now - previous);
     previous = now;
   }
 

@@ -7,6 +7,8 @@
 #include <array>
 #include <chrono>
 
+#include "shader.hpp"
+
 using Milliseconds = std::chrono::duration<double, std::milli>;
 
 class App {
@@ -14,7 +16,18 @@ class App {
   SDL_GLContext gl_context_ = nullptr;
   bool running_ = true;
 
-  std::array<float, 6> vertices_ = {0.0f, 0.5f, 0.5f, -0.5f, -0.5f, -0.5f};
+  ShaderProgram shader_program_;
+
+  // clang-format off
+  static constexpr std::array<float, 12> vertices_ = {0.0f, 1.0f,
+                                                     1.0f, 0.0f,
+                                                     0.0f, 0.0f,
+
+                                                     0.0f, 1.0f,
+                                                     1.0f, 1.0f,
+                                                     1.0f, 0.0f
+                                                     };
+  // clang-format on
   uint32_t vbo_ = 0;
 
 public:
@@ -26,7 +39,7 @@ public:
   App(App&&) noexcept = delete;
   auto operator=(App&&) & noexcept = delete;
 
-  auto update(const Milliseconds& delta_time) -> void;
+  auto mainloop(const Milliseconds& delta_time) -> void;
   auto render(const Milliseconds& delta_time) -> void;
   auto handle_input() -> void;
 

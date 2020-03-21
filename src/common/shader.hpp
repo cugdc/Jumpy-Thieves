@@ -33,6 +33,19 @@ public:
   Shader(Shader&& other) noexcept;
   auto operator=(Shader&& other) & noexcept -> Shader&;
 
+  friend class ShaderProgram;
+};
+
+class ShaderProgram {
+  unsigned int id_{};
+
+public:
+  ShaderProgram() = default;
+  explicit ShaderProgram(const std::vector<Shader>& shaders);
+
+  auto use() const -> void;
+  [[nodiscard]] auto id() const -> unsigned int;
+
   auto set_bool(const std::string& name, bool value) const noexcept -> void;
 
   auto set_int(const std::string& name, int value) const noexcept -> void;
@@ -60,19 +73,6 @@ public:
       -> void;
   auto set_mat4(const std::string& name, const beyond::Mat4& mat) const noexcept
       -> void;
-
-  friend class ShaderProgram;
-};
-
-class ShaderProgram {
-  unsigned int id_{};
-
-public:
-  ShaderProgram() = default;
-  explicit ShaderProgram(const std::vector<Shader>& shaders);
-
-  auto use() const -> void;
-  [[nodiscard]] auto id() const -> unsigned int;
 };
 
 class ShaderBuilder {

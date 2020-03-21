@@ -1,11 +1,15 @@
 #include "app.hpp"
-#include "shader.hpp"
 
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>
 #include <imgui_impl_sdl.h>
 
 #include <spdlog/spdlog.h>
+
+#include <beyond/core/math/transform.hpp>
+
+constexpr int width = 1200;
+constexpr int height = 800;
 
 App::App()
 {
@@ -27,9 +31,9 @@ App::App()
   SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
   SDL_GL_SetSwapInterval(1);
 
-  window_ =
-      SDL_CreateWindow("Jumpy Thieves", SDL_WINDOWPOS_UNDEFINED,
-                       SDL_WINDOWPOS_UNDEFINED, 1200, 800, SDL_WINDOW_OPENGL);
+  window_ = SDL_CreateWindow("Jumpy Thieves", SDL_WINDOWPOS_UNDEFINED,
+                             SDL_WINDOWPOS_UNDEFINED, width, height,
+                             SDL_WINDOW_OPENGL);
   if (window_ == nullptr) {
     spdlog::critical("[SDL2] Window is null: {}", SDL_GetError());
     std::exit(1);
@@ -54,19 +58,25 @@ App::App()
   ImGui_ImplOpenGL3_Init("#version 300 es");
   ImGui::StyleColorsDark();
 
-  auto shader_program =
+  shader_program_ =
       ShaderBuilder()
           .load("assets/shaders/triangle.vert.glsl", Shader::Type::Vertex)
           .load("assets/shaders/triangle.frag.glsl", Shader::Type::Fragment)
           .build();
-  shader_program.use();
+  shader_program_.use();
+
+  const auto projection =
+      beyond::ortho(0.f, static_cast<float>(width), static_cast<float>(height),
+                    0.f, -1.f, 1.f);
+  shader_program_.set_mat4("projection", projection);
+  shader_program_.use();
 
   glGenBuffers(1, &vbo_);
   glBindBuffer(GL_ARRAY_BUFFER, vbo_);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices_), vertices_.data(),
                GL_STATIC_DRAW);
 
-  GLint pos_attrib = glGetAttribLocation(shader_program.id(), "position");
+  GLint pos_attrib = glGetAttribLocation(shader_program_.id(), "position");
   glEnableVertexAttribArray(pos_attrib);
   glVertexAttribPointer(pos_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
 }
@@ -81,26 +91,35 @@ App::~App()
   SDL_Quit();
 }
 
-auto App::update(const Milliseconds& delta_time) -> void
+auto App::mainloop(const Milliseconds& delta_time) -> void
 {
   handle_input();
   render(delta_time);
-  SDL_GL_SwapWindow(window_);
 }
 
-auto App::render(const Milliseconds& delta_time) -> void
+auto App::render(const Milliseconds & /*delta_time*/) -> void
 {
+  using namespace beyond::literals;
+
   // Clear the screen
   glClearColor(48.f / 255, 10.f / 255, 36.f / 255, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT);
 
-  vertices_[0] += delta_time / Milliseconds(3000);
-  vertices_[0] = std::fmod(vertices_[0], 0.5f);
+  beyond::Vec2 size{50.f, 50.f};
+
+  const auto model = beyond::translate(100.f, 100.f, 0.f) * // Position
+                     beyond::translate(0.5f * size.x, 0.5f * size.y, 0.f) *
+                     beyond::rotate_z(45._deg) *
+                     beyond::translate(-0.5f * size.x, -0.5f * size.y, 0.f) *
+                     beyond::scale(size.x, size.y, 1.f);
+  shader_program_.set_mat4("model", model);
 
   glBindBuffer(GL_ARRAY_BUFFER, vbo_);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices_), vertices_.data(),
-               GL_STATIC_DRAW);
-  glDrawArrays(GL_TRIANGLES, 0, 3);
+               GL_DYNAMIC_DRAW);
+  glDrawArrays(GL_TRIANGLES, 0, vertices_.size() / 2);
+
+  SDL_GL_SwapWindow(window_);
 }
 
 auto App::handle_input() -> void
