@@ -1,8 +1,11 @@
 add_library(common
-        shader.cpp shader.hpp file_util.cpp file_util.hpp app.cpp app.hpp opengl.hpp)
+        shader.cpp shader.hpp file_util.cpp file_util.hpp app.cpp app.hpp opengl.hpp
+        sprite_renderer.hpp sprite_renderer.cpp
+        )
 target_link_libraries(common
         PUBLIC
         CONAN_PKG::spdlog
+        CONAN_PKG::stb
         imgui
         beyond::core
         PRIVATE compiler_options)

@@ -7,6 +7,7 @@ class JumpyThievesWasm(ConanFile):
                 "glm/0.9.8.5@bincrafters/stable",
                 "gsl_microsoft/2.0.0@bincrafters/stable",
                 "spdlog/1.5.0",
+                "stb/20180214@conan/stable",
                 "imgui/1.75"]
     generators = ["cmake"]
 

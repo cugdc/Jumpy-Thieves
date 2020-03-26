@@ -8,27 +8,20 @@
 #include <chrono>
 
 #include "shader.hpp"
+#include "sprite_renderer.hpp"
 
 using Milliseconds = std::chrono::duration<double, std::milli>;
 
 class App {
+  static constexpr int width = 1200;
+  static constexpr int height = 800;
+
   SDL_Window* window_ = nullptr;
   SDL_GLContext gl_context_ = nullptr;
   bool running_ = true;
+  SpriteRenderer sprite_renderer_;
 
-  ShaderProgram shader_program_;
-
-  // clang-format off
-  static constexpr std::array<float, 12> vertices_ = {0.0f, 1.0f,
-                                                     1.0f, 0.0f,
-                                                     0.0f, 0.0f,
-
-                                                     0.0f, 1.0f,
-                                                     1.0f, 1.0f,
-                                                     1.0f, 0.0f
-                                                     };
-  // clang-format on
-  uint32_t vbo_ = 0;
+  uint32_t texture_ = 0;
 
 public:
   App();

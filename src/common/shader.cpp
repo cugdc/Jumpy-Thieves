@@ -1,6 +1,9 @@
 #include <beyond/core/math/matrix.hpp>
 #include <beyond/core/math/vector.hpp>
 
+#include <iostream>
+#include <vector>
+
 #include "file_util.hpp"
 #include "shader.hpp"
 
@@ -9,6 +12,24 @@ Shader::Shader(const char* source, Shader::Type type) : type_{type}
   id_ = glCreateShader(static_cast<GLenum>(type));
   glShaderSource(id_, 1, &source, nullptr);
   glCompileShader(id_);
+
+  GLint isCompiled = 0;
+  glGetShaderiv(id_, GL_COMPILE_STATUS, &isCompiled);
+  if (isCompiled == GL_FALSE) {
+    GLint maxLength = 0;
+    glGetShaderiv(id_, GL_INFO_LOG_LENGTH, &maxLength);
+
+    // The maxLength includes the NULL character
+    std::vector<char> errorLog(maxLength);
+    glGetShaderInfoLog(id_, maxLength, &maxLength, &errorLog[0]);
+
+    std::cout << errorLog.data() << '\n';
+
+    // Provide the infolog in whatever manor you deem best.
+    // Exit with failure.
+    glDeleteShader(id_); // Don't leak the shader.
+    return;
+  }
 }
 
 Shader::~Shader() noexcept
@@ -36,6 +57,14 @@ ShaderProgram::ShaderProgram(const std::vector<Shader>& shaders)
   }
 
   glLinkProgram(id_);
+
+  int success;
+  glGetProgramiv(id_, GL_LINK_STATUS, &success);
+  GLchar info_log[1024];
+  if (!success) {
+    glGetProgramInfoLog(id_, 1024, nullptr, static_cast<GLchar*>(info_log));
+    std::cerr << fmt::format("Shader linking error: {}", info_log);
+  }
 }
 
 auto ShaderProgram::use() const -> void

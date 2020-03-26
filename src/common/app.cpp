@@ -8,8 +8,35 @@
 
 #include <beyond/core/math/transform.hpp>
 
-constexpr int width = 1200;
-constexpr int height = 800;
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
+auto load_texture(const char* file_path) -> uint32_t
+{
+  uint32_t texture{};
+  glGenTextures(1, &texture);
+  glBindTexture(GL_TEXTURE_2D, texture);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  int width, height, nv_channels;
+  unsigned char* data = stbi_load(file_path, &width, &height, &nv_channels, 0);
+  if (!data) {
+    fmt::print(stderr, "Error: cannot load texture {}\n", file_path);
+    std::fflush(stderr);
+    return 0;
+  }
+
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
+               GL_UNSIGNED_BYTE, data);
+  glGenerateMipmap(GL_TEXTURE_2D);
+
+  glBindTexture(GL_TEXTURE_2D, 0);
+
+  return texture;
+}
 
 App::App()
 {
@@ -58,27 +85,13 @@ App::App()
   ImGui_ImplOpenGL3_Init("#version 300 es");
   ImGui::StyleColorsDark();
 
-  shader_program_ =
-      ShaderBuilder()
-          .load("assets/shaders/triangle.vert.glsl", Shader::Type::Vertex)
-          .load("assets/shaders/triangle.frag.glsl", Shader::Type::Fragment)
-          .build();
-  shader_program_.use();
-
   const auto projection =
       beyond::ortho(0.f, static_cast<float>(width), static_cast<float>(height),
                     0.f, -1.f, 1.f);
-  shader_program_.set_mat4("projection", projection);
-  shader_program_.use();
 
-  glGenBuffers(1, &vbo_);
-  glBindBuffer(GL_ARRAY_BUFFER, vbo_);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices_), vertices_.data(),
-               GL_STATIC_DRAW);
+  sprite_renderer_ = SpriteRenderer(projection);
 
-  GLint pos_attrib = glGetAttribLocation(shader_program_.id(), "position");
-  glEnableVertexAttribArray(pos_attrib);
-  glVertexAttribPointer(pos_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
+  texture_ = load_texture("assets/images/awesomeface.png");
 }
 
 App::~App()
@@ -99,25 +112,12 @@ auto App::mainloop(const Milliseconds& delta_time) -> void
 
 auto App::render(const Milliseconds & /*delta_time*/) -> void
 {
-  using namespace beyond::literals;
-
   // Clear the screen
   glClearColor(48.f / 255, 10.f / 255, 36.f / 255, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT);
 
-  beyond::Vec2 size{50.f, 50.f};
-
-  const auto model = beyond::translate(100.f, 100.f, 0.f) * // Position
-                     beyond::translate(0.5f * size.x, 0.5f * size.y, 0.f) *
-                     beyond::rotate_z(45._deg) *
-                     beyond::translate(-0.5f * size.x, -0.5f * size.y, 0.f) *
-                     beyond::scale(size.x, size.y, 1.f);
-  shader_program_.set_mat4("model", model);
-
-  glBindBuffer(GL_ARRAY_BUFFER, vbo_);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices_), vertices_.data(),
-               GL_DYNAMIC_DRAW);
-  glDrawArrays(GL_TRIANGLES, 0, vertices_.size() / 2);
+  sprite_renderer_.render(texture_, 100, 100);
+  sprite_renderer_.render(texture_, 300, 300);
 
   SDL_GL_SwapWindow(window_);
 }

@@ -16,6 +16,7 @@ Checks:          '*,
 -cppcoreguidelines-pro-type-union-access,
 -fuchsia-*,
 -hicpp-uppercase-literal-suffix,
+-hicpp-signed-bitwise,
 -google-runtime-references,
 -google-build-using-namespace
 '
