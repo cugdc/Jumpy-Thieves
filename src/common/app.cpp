@@ -116,8 +116,15 @@ auto App::render(const Milliseconds & /*delta_time*/) -> void
   glClearColor(48.f / 255, 10.f / 255, 36.f / 255, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT);
 
-  sprite_renderer_.render(texture_, 100, 100);
-  sprite_renderer_.render(texture_, 300, 300);
+  Rect dest{.width = 50, .height = 50, .x = 100, .y = 100};
+  Rect textcoord{.width = 1, .height = 1, .x = 0, .y = 0};
+  sprite_renderer_.render(texture_, dest, textcoord);
+
+  dest.x = 300;
+  dest.y = 300;
+  textcoord.width = 0.5;
+  textcoord.height = 0.5;
+  sprite_renderer_.render(texture_, dest, textcoord);
 
   SDL_GL_SwapWindow(window_);
 }
@@ -134,6 +141,8 @@ auto App::handle_input() -> void
       break;
     case SDL_QUIT:
       running_ = false;
+      break;
+    default:
       break;
     }
   }

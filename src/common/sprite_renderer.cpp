@@ -8,45 +8,64 @@ SpriteRenderer::SpriteRenderer(const beyond::Mat4& projection)
 
   shader_program_ =
       ShaderBuilder()
-          .load("assets/shaders/triangle.vert.glsl", Shader::Type::Vertex)
-          .load("assets/shaders/triangle.frag.glsl", Shader::Type::Fragment)
+          .load("assets/shaders/sprite.vert.glsl", Shader::Type::Vertex)
+          .load("assets/shaders/sprite.frag.glsl", Shader::Type::Fragment)
           .build();
   shader_program_.use();
-
   shader_program_.set_mat4("projection", projection);
-  shader_program_.use();
+
+  glGenVertexArrays(1, &vao_);
+  glBindVertexArray(vao_);
 
   glGenBuffers(1, &vbo_);
   glBindBuffer(GL_ARRAY_BUFFER, vbo_);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices.data(),
+
+  std::uint32_t ebo;
+  glGenBuffers(1, &ebo);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices.data(),
                GL_STATIC_DRAW);
 
-  GLint pos_attrib = glGetAttribLocation(shader_program_.id(), "position");
+  GLint pos_attrib = glGetAttribLocation(shader_program_.id(), "vertices");
   glEnableVertexAttribArray(pos_attrib);
   glVertexAttribPointer(pos_attrib, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat),
                         nullptr);
+
   glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glBindVertexArray(0);
 }
 
-auto SpriteRenderer::render(uint32_t texture, float x, float y) -> void
+struct Vertex {
+  beyond::Vec2 pos;
+  beyond::Vec2 tex_coord;
+};
+
+auto SpriteRenderer::render(uint32_t texture, const Rect& dest,
+                            const Rect& tex_coord) -> void
 {
-  using namespace beyond::literals;
+  glBindVertexArray(vao_);
+  glBindBuffer(GL_ARRAY_BUFFER, vbo_);
 
-  beyond::Vec2 size{50.f, 50.f};
+  // clang-format off
+  std::array vertices = {
+      Vertex{{dest.x, dest.y + dest.height}, {tex_coord.x, tex_coord.y + tex_coord.height}},
+      Vertex{{dest.x, dest.y}, {tex_coord.x, tex_coord.y}},
+      Vertex{{dest.x + dest.width, dest.y}, {tex_coord.x + tex_coord.width, tex_coord.y}},
+      Vertex{{dest.x + dest.width, dest.y + dest.height}, {tex_coord.x + tex_coord.width, tex_coord.y + tex_coord.height}},
+  };
+  // clang-format on
 
-  const auto model = beyond::translate(x, y, 0.f) * // Position
-                     beyond::translate(0.5f * size.x, 0.5f * size.y, 0.f) *
-                     beyond::rotate_z(0._deg) *
-                     beyond::translate(-0.5f * size.x, -0.5f * size.y, 0.f) *
-                     beyond::scale(size.x, size.y, 1.f);
-  shader_program_.set_mat4("model", model);
+  shader_program_.use();
+
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices.data(),
+               GL_STATIC_DRAW);
 
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, texture);
 
-  glBindBuffer(GL_ARRAY_BUFFER, vbo_);
-  glDrawArrays(GL_TRIANGLES, 0, 6);
+  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
-  glBindTexture(0, texture);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glBindVertexArray(0);
+  glBindTexture(GL_TEXTURE_2D, 0);
 }
