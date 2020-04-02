@@ -6,7 +6,9 @@
 #include <SDL2/SDL.h>
 #include <array>
 #include <chrono>
+#include <memory>
 
+#include "game.hpp"
 #include "shader.hpp"
 #include "sprite_renderer.hpp"
 
@@ -20,8 +22,9 @@ class App {
   SDL_GLContext gl_context_ = nullptr;
   bool running_ = true;
   SpriteRenderer sprite_renderer_;
+  Milliseconds remain_time_;
 
-  uint32_t texture_ = 0;
+  std::unique_ptr<Game> game_;
 
 public:
   App();

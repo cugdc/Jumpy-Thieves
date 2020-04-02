@@ -1,7 +1,6 @@
 #include "sprite_renderer.hpp"
 #include "beyond/core/math/transform.hpp"
-
-#include <SDL2/SDL_opengles2.h>
+#include "opengl.hpp"
 
 SpriteRenderer::SpriteRenderer(const beyond::Mat4& projection)
 {
@@ -26,7 +25,8 @@ SpriteRenderer::SpriteRenderer(const beyond::Mat4& projection)
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices.data(),
                GL_STATIC_DRAW);
 
-  GLint pos_attrib = glGetAttribLocation(shader_program_.id(), "vertices");
+  auto pos_attrib = static_cast<GLuint>(
+      glGetAttribLocation(shader_program_.id(), "vertices"));
   glEnableVertexAttribArray(pos_attrib);
   glVertexAttribPointer(pos_attrib, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat),
                         nullptr);
@@ -47,12 +47,16 @@ auto SpriteRenderer::render(uint32_t texture, const Rect& dest,
   glBindBuffer(GL_ARRAY_BUFFER, vbo_);
 
   // clang-format off
-  std::array vertices = {
-      Vertex{{dest.x, dest.y + dest.height}, {tex_coord.x, tex_coord.y + tex_coord.height}},
-      Vertex{{dest.x, dest.y}, {tex_coord.x, tex_coord.y}},
-      Vertex{{dest.x + dest.width, dest.y}, {tex_coord.x + tex_coord.width, tex_coord.y}},
-      Vertex{{dest.x + dest.width, dest.y + dest.height}, {tex_coord.x + tex_coord.width, tex_coord.y + tex_coord.height}},
-  };
+    std::array vertices = {
+            Vertex{{dest.x,      dest.y + dest.height},
+                   {tex_coord.x, tex_coord.y + tex_coord.height}},
+            Vertex{{dest.x,      dest.y},
+                   {tex_coord.x, tex_coord.y}},
+            Vertex{{dest.x + dest.width,           dest.y},
+                   {tex_coord.x + tex_coord.width, tex_coord.y}},
+            Vertex{{dest.x + dest.width,           dest.y + dest.height},
+                   {tex_coord.x + tex_coord.width, tex_coord.y + tex_coord.height}},
+    };
   // clang-format on
 
   shader_program_.use();

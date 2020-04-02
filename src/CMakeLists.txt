@@ -26,7 +26,7 @@ if (EMSCRIPTEN)
             PROPERTIES LINK_FLAGS
             "-s 'EXTRA_EXPORTED_RUNTIME_METHODS=[\"ccall\", \"cwrap\"]' -s MAX_WEBGL_VERSION=2 ")
 else ()
-    add_executable(app "main.cpp" main.cpp)
+    add_executable(app "main.cpp")
     target_link_libraries(app
             PRIVATE
             common

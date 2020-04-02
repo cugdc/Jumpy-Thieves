@@ -8,36 +8,6 @@
 
 #include <beyond/core/math/transform.hpp>
 
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
-
-auto load_texture(const char* file_path) -> uint32_t
-{
-  uint32_t texture{};
-  glGenTextures(1, &texture);
-  glBindTexture(GL_TEXTURE_2D, texture);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-  int width, height, nv_channels;
-  unsigned char* data = stbi_load(file_path, &width, &height, &nv_channels, 0);
-  if (!data) {
-    fmt::print(stderr, "Error: cannot load texture {}\n", file_path);
-    std::fflush(stderr);
-    return 0;
-  }
-
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
-               GL_UNSIGNED_BYTE, data);
-  glGenerateMipmap(GL_TEXTURE_2D);
-
-  glBindTexture(GL_TEXTURE_2D, 0);
-
-  return texture;
-}
-
 App::App()
 {
   static bool instantiated = false;
@@ -91,7 +61,7 @@ App::App()
 
   sprite_renderer_ = SpriteRenderer(projection);
 
-  texture_ = load_texture("assets/images/awesomeface.png");
+  game_ = std::make_unique<Game>();
 }
 
 App::~App()
@@ -106,7 +76,15 @@ App::~App()
 
 auto App::mainloop(const Milliseconds& delta_time) -> void
 {
+  using namespace std::chrono_literals;
   handle_input();
+
+  remain_time_ += delta_time;
+  while (remain_time_ > 10ms) {
+    game_->fixed_update();
+    remain_time_ -= 10ms;
+  }
+
   render(delta_time);
 }
 
@@ -116,15 +94,7 @@ auto App::render(const Milliseconds & /*delta_time*/) -> void
   glClearColor(48.f / 255, 10.f / 255, 36.f / 255, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT);
 
-  Rect dest{.width = 50, .height = 50, .x = 100, .y = 100};
-  Rect textcoord{.width = 1, .height = 1, .x = 0, .y = 0};
-  sprite_renderer_.render(texture_, dest, textcoord);
-
-  dest.x = 300;
-  dest.y = 300;
-  textcoord.width = 0.5;
-  textcoord.height = 0.5;
-  sprite_renderer_.render(texture_, dest, textcoord);
+  game_->render(sprite_renderer_);
 
   SDL_GL_SwapWindow(window_);
 }
@@ -135,10 +105,42 @@ auto App::handle_input() -> void
   while (SDL_PollEvent(&sdl_event) != 0) {
     switch (sdl_event.type) {
     case SDL_KEYDOWN:
-      if (sdl_event.key.keysym.sym == SDLK_ESCAPE) {
+      switch (sdl_event.key.keysym.sym) {
+      case SDLK_ESCAPE:
         running_ = false;
+        break;
+      case SDLK_LEFT:
+        game_->set_player_movement(Movement::left);
+        break;
+      case SDLK_RIGHT:
+        game_->set_player_movement(Movement::right);
+        break;
+      case SDLK_UP:
+        game_->set_player_movement(Movement::up);
+        break;
+      case SDLK_DOWN:
+        game_->set_player_movement(Movement::down);
+        break;
+      default:
+        break;
       }
       break;
+    case SDL_KEYUP:
+      switch (sdl_event.key.keysym.sym) {
+      case SDLK_LEFT:
+        [[fallthrough]];
+      case SDLK_RIGHT:
+        [[fallthrough]];
+      case SDLK_UP:
+        [[fallthrough]];
+      case SDLK_DOWN:
+        game_->set_player_movement(Movement::stationary);
+        break;
+      default:
+        break;
+      }
+      break;
+
     case SDL_QUIT:
       running_ = false;
       break;
