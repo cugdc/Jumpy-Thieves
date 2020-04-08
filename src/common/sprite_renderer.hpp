@@ -7,7 +7,7 @@
 #include "rect.hpp"
 #include "shader.hpp"
 
-#include "beyond/core/math/matrix.hpp"
+#include "beyond/math/matrix.hpp"
 
 class SpriteRenderer {
   static constexpr std::array<uint32_t, 6> indices = {0, 1, 3, 1, 2, 3};

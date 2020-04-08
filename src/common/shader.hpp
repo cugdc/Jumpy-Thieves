@@ -8,7 +8,7 @@
 #include <string_view>
 #include <vector>
 
-#include <beyond/core/math/math_fwd.hpp>
+#include <beyond/math/math_fwd.hpp>
 
 #include "opengl.hpp"
 

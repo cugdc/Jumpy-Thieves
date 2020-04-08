@@ -1,5 +1,5 @@
-#include <beyond/core/math/matrix.hpp>
-#include <beyond/core/math/vector.hpp>
+#include <beyond/math/matrix.hpp>
+#include <beyond/math/vector.hpp>
 
 #include <iostream>
 #include <vector>

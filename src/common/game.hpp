@@ -5,7 +5,8 @@
 
 #include <entt/entt.hpp>
 
-#include <beyond/core/math/vector.hpp>
+#include <beyond/math/vector.hpp>
+#include <beyond/math/point.hpp>
 
 #include "rect.hpp"
 

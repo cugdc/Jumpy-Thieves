@@ -1,5 +1,5 @@
 #include "sprite_renderer.hpp"
-#include "beyond/core/math/transform.hpp"
+#include "beyond/math/transform.hpp"
 #include "opengl.hpp"
 
 SpriteRenderer::SpriteRenderer(const beyond::Mat4& projection)

@@ -6,7 +6,7 @@
 
 #include <spdlog/spdlog.h>
 
-#include <beyond/core/math/transform.hpp>
+#include <beyond/math/transform.hpp>
 
 App::App()
 {
