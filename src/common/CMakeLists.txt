@@ -1,7 +1,7 @@
 add_library(common
         shader.cpp shader.hpp file_util.cpp file_util.hpp app.cpp app.hpp opengl.hpp
         sprite_renderer.hpp sprite_renderer.cpp game.hpp game.cpp
-        rect.hpp)
+        rect.hpp texture.cpp texture.hpp tile_map.cpp tile_map.hpp constants.hpp)
 target_link_libraries(common
         PUBLIC
         CONAN_PKG::spdlog

@@ -1,4 +1,5 @@
 #include "app.hpp"
+#include "constants.hpp"
 
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>
@@ -29,8 +30,8 @@ App::App()
   SDL_GL_SetSwapInterval(1);
 
   window_ = SDL_CreateWindow("Jumpy Thieves", SDL_WINDOWPOS_UNDEFINED,
-                             SDL_WINDOWPOS_UNDEFINED, width, height,
-                             SDL_WINDOW_OPENGL);
+                             SDL_WINDOWPOS_UNDEFINED, window_width,
+                             window_height, SDL_WINDOW_OPENGL);
   if (window_ == nullptr) {
     spdlog::critical("[SDL2] Window is null: {}", SDL_GetError());
     std::exit(1);
@@ -56,8 +57,8 @@ App::App()
   ImGui::StyleColorsDark();
 
   const auto projection =
-      beyond::ortho(0.f, static_cast<float>(width), static_cast<float>(height),
-                    0.f, -1.f, 1.f);
+      beyond::ortho(0.f, static_cast<float>(window_width),
+                    static_cast<float>(window_height), 0.f, -1.f, 1.f);
 
   sprite_renderer_ = SpriteRenderer(projection);
 

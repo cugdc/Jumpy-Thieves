@@ -1,5 +1,3 @@
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
 
 #include <fmt/format.h>
 
@@ -7,42 +5,17 @@
 #include "opengl.hpp"
 #include "rect.hpp"
 #include "sprite_renderer.hpp"
+#include "texture.hpp"
 
-auto load_texture(const char* file_path) -> uint32_t
+Game::Game() : map_{create_tile_map()}
 {
-  uint32_t texture{};
-  glGenTextures(1, &texture);
-  glBindTexture(GL_TEXTURE_2D, texture);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-  int width, height, nv_channels;
-  unsigned char* data = stbi_load(file_path, &width, &height, &nv_channels, 0);
-  if (!data) {
-    fmt::print(stderr, "Error: cannot load texture {}\n", file_path);
-    std::fflush(stderr);
-    return 0;
-  }
-
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
-               GL_UNSIGNED_BYTE, data);
-  glGenerateMipmap(GL_TEXTURE_2D);
-
-  glBindTexture(GL_TEXTURE_2D, 0);
-
-  return texture;
-}
-
-Game::Game()
-{
-  texture_ = load_texture("assets/images/awesomeface.png");
+  load_texture("assets/images/awesomeface.png")
+      .map([this](const Texture& texture) { texture_ = texture; });
 
   player_ = registry_.create();
   registry_.assign<Position>(player_, beyond::Point2{400, 400});
   registry_.assign<Velocity>(player_, beyond::Vec2{0, 0});
-  registry_.assign<Sprite>(player_, Sprite{texture_, {0, 0, 1, 1}, 50, 50});
+  registry_.assign<Sprite>(player_, Sprite{texture_.id, {0, 0, 1, 1}, 50, 50});
   registry_.assign<Player>(player_, 1.5);
 
   for (int i = 0; i < 100; ++i) {
@@ -53,7 +26,8 @@ Game::Game()
                                               400.f + 50.f * std::cos(fi)});
     registry_.assign<Velocity>(monster,
                                beyond::Vec2{std::cos(fi), std::sin(fi)});
-    registry_.assign<Sprite>(monster, Sprite{texture_, {0, 0, 1, 1}, 30, 30});
+    registry_.assign<Sprite>(monster,
+                             Sprite{texture_.id, {0, 0, 1, 1}, 30, 30});
   }
 }
 
@@ -65,6 +39,8 @@ auto Game::fixed_update() -> void
 
 auto Game::render(SpriteRenderer& sprite_renderer) -> void
 {
+  render_tile_map(map_, sprite_renderer);
+
   registry_.view<Position, Sprite>().each([&](const Position& pos,
                                               const Sprite& sprite) {
     sprite_renderer.render(

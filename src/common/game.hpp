@@ -5,10 +5,12 @@
 
 #include <entt/entt.hpp>
 
-#include <beyond/math/vector.hpp>
 #include <beyond/math/point.hpp>
+#include <beyond/math/vector.hpp>
 
 #include "rect.hpp"
+#include "texture.hpp"
+#include "tile_map.hpp"
 
 struct Position {
   beyond::Point2 data;
@@ -34,7 +36,8 @@ class SpriteRenderer;
 enum class Movement { stationary, up, down, left, right };
 
 class Game {
-  uint32_t texture_ = 0;
+  TileMap map_;
+  Texture texture_;
   entt::registry registry_;
   entt::entity player_;
 

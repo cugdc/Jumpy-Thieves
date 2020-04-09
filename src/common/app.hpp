@@ -15,9 +15,6 @@
 using Milliseconds = std::chrono::duration<double, std::milli>;
 
 class App {
-  static constexpr int width = 1200;
-  static constexpr int height = 800;
-
   SDL_Window* window_ = nullptr;
   SDL_GLContext gl_context_ = nullptr;
   bool running_ = true;
